@@ -1,7 +1,11 @@
 /*
- *  程序名：crtsurfdata4.cpp  本程序用于生成全国气象站点观测的分钟数据。
- *  作者：吴从周。
-*/
+ * @Description: crtsurfdata4.cpp  本程序用于生成全国气象站点观测的分钟数据。
+ * @Version: v4.0
+ * @Autor: lele
+ * @Date: 2023-08-03 22:13:34
+ * @LastEditors: lele
+ * @LastEditTime: 2023-08-03 22:13:35
+ */
 
 #include "_public.h"
 
@@ -56,7 +60,7 @@ int main(int argc,char *argv[])
     printf("Example:/project/idc1/bin/crtsurfdata4 /project/idc1/ini/stcode.ini /tmp/idc/surfdata /log/idc/crtsurfdata4.log xml,json,csv\n\n");
 
     printf("inifile 全国气象站点参数文件名。\n");
-    printf("outpath 全国气象站点数据文件存放的目录。\n");
+    printf("outpath 全国气象站点观测数据文件存放的目录。\n");
     printf("logfile 本程序运行的日志文件名。\n");
     printf("datafmt 生成数据文件的格式，支持xml、json和csv三种格式，中间用逗号分隔。\n\n");
 
