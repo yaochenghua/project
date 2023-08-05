@@ -1,3 +1,14 @@
+/*
+ * @Description: 基于ftp协议的文件传输模块，从服务器下载文件到本地(增加了删除ftp服务器上的文件
+和下载后把ftp服务器上的文件移动到备份目录功能)
+ * @Version: v3.0
+ * @Autor: lele
+ * @Date: 2023-08-05 16:44:49
+ * @LastEditors: lele
+ * @LastEditTime: 2023-08-05 17:07:42
+ */
+
+
 #include "_public.h"
 #include "_ftp.h"
 
