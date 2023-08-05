@@ -1,3 +1,12 @@
+/*
+ * @Description: 清理历史数据模块
+ * @Version: v1.0
+ * @Autor: lele
+ * @Date: 2023-08-05 10:14:18
+ * @LastEditors: lele
+ * @LastEditTime: 2023-08-05 10:14:18
+ */
+
 #include "_public.h"
 
 // 程序退出和信号2、15的处理函数。

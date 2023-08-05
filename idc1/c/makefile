@@ -1,8 +1,8 @@
 # 开发框架头文件路径。
-PUBINCL = -I/project/public
+PUBINCL = -I/home/lele/project/public
 
 # 开发框架cpp文件名，这里直接包含进来，没有采用链接库，是为了方便调试。
-PUBCPP = /project/public/_public.cpp
+PUBCPP = /home/lele/project/public/_public.cpp
 
 # mysql头文件存放路径
 MYSQLINCL = -I/usr/local/mysql/include  -I/project/public/db/mysql

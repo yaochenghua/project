@@ -1,3 +1,13 @@
+/*
+ * @Description: 压缩文件模块
+ * @Version: v1.0
+ * @Autor: lele
+ * @Date: 2023-08-04 21:24:16
+ * @LastEditors: lele
+ * @LastEditTime: 2023-08-04 21:24:17
+ */
+
+
 #include "_public.h"
 
 // 程序退出和信号2、15的处理函数。
