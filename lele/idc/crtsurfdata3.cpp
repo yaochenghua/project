@@ -1,10 +1,10 @@
 /*
- * @Description: 
- * @Version: 
+ * @Description: crtsurfdata3.cpp  本程序用于生成全国气象站点观测的分钟数据。
+ * @Version: v3.0
  * @Autor: lele
  * @Date: 2023-08-03 22:51:49
  * @LastEditors: lele
- * @LastEditTime: 2023-08-03 22:51:51
+ * @LastEditTime: 2023-08-05 16:18:30
  */
 
 
