@@ -1,10 +1,11 @@
 /*
- * @Description: 基于ftp协议的文件传输模块，从服务器下载文件到本地(增加了增量下载ftp服务器文件的功能)
- * @Version: v4.0
+ * @Description: 基于ftp协议的文件传输模块，从服务器下载文件到本地(增加了删除ftp服务器上的文件
+和下载后把ftp服务器上的文件移动到备份目录功能)
+ * @Version: v3.0
  * @Autor: lele
- * @Date: 2023-08-05 17:08:36
+ * @Date: 2023-08-05 16:44:49
  * @LastEditors: lele
- * @LastEditTime: 2023-08-05 17:08:39
+ * @LastEditTime: 2023-08-05 17:07:42
  */
 
 
@@ -24,7 +25,6 @@ struct st_arg
   char listfilename[301];  // 下载前列出服务器文件名的文件。
   int  ptype;              // 下载后服务器文件的处理方式：1-什么也不做；2-删除；3-备份。
   char remotepathbak[301]; // 下载后服务器文件的备份目录。
-  char okfilename[301];    // 已下载成功文件名清单。
 } starg;
 
 // 文件信息的结构体。
@@ -34,24 +34,9 @@ struct st_fileinfo
   char mtime[21];       // 文件时间。
 };
 
-vector<struct st_fileinfo> vlistfile1;    // 已下载成功文件名的容器，从okfilename中加载。
-vector<struct st_fileinfo> vlistfile2;    // 下载前列出服务器文件名的容器，从nlist文件中加载。
-vector<struct st_fileinfo> vlistfile3;    // 本次不需要下载的文件的容器。
-vector<struct st_fileinfo> vlistfile4;    // 本次需要下载的文件的容器。
+vector<struct st_fileinfo> vlistfile;    // 存放下载前列出服务器文件名的容器。
 
-// 加载okfilename文件中的内容到容器vlistfile1中。
-bool LoadOKFile();
-
-// 比较vlistfile2和vlistfile1，得到vlistfile3和vlistfile4。
-bool CompVector();
-
-// 把容器vlistfile3中的内容写入okfilename文件，覆盖之前的旧okfilename文件。
-bool WriteToOKFile();
-
-// 如果ptype==1，把下载成功的文件记录追加到okfilename文件中。
-bool AppendToOKFile(struct st_fileinfo *stfileinfo);
-
-// 把ftp.nlist()方法获取到的list文件加载到容器vlistfile2中。
+// 把ftp.nlist()方法获取到的list文件加载到容器vlistfile中。
 bool LoadListFile();
 
 CLogFile logfile;
@@ -118,34 +103,19 @@ bool _ftpgetfiles()
     logfile.Write("ftp.nlist(%s) failed.\n",starg.remotepath); return false;
   }
 
-  // 把ftp.nlist()方法获取到的list文件加载到容器vlistfile2中。
+  // 把ftp.nlist()方法获取到的list文件加载到容器vlistfile中。
   if (LoadListFile()==false)
   {
     logfile.Write("LoadListFile() failed.\n");  return false;
   }
 
-  if (starg.ptype==1)
-  {
-    // 加载okfilename文件中的内容到容器vlistfile1中。
-    LoadOKFile();
-
-    // 比较vlistfile2和vlistfile1，得到vlistfile3和vlistfile4。
-    CompVector();
-
-    // 把容器vlistfile3中的内容写入okfilename文件，覆盖之前的旧okfilename文件。
-    WriteToOKFile();
-
-    // 把vlistfile4中的内容复制到vlistfile2中。
-    vlistfile2.clear(); vlistfile2.swap(vlistfile4);
-  }
-
   char strremotefilename[301],strlocalfilename[301];
 
-  // 遍历容器vlistfile2。
-  for (int ii=0;ii<vlistfile2.size();ii++)
+  // 遍历容器vlistfile。
+  for (int ii=0;ii<vlistfile.size();ii++)
   {
-    SNPRINTF(strremotefilename,sizeof(strremotefilename),300,"%s/%s",starg.remotepath,vlistfile2[ii].filename);
-    SNPRINTF(strlocalfilename,sizeof(strlocalfilename),300,"%s/%s",starg.localpath,vlistfile2[ii].filename);
+    SNPRINTF(strremotefilename,sizeof(strremotefilename),300,"%s/%s",starg.remotepath,vlistfile[ii].filename);
+    SNPRINTF(strlocalfilename,sizeof(strlocalfilename),300,"%s/%s",starg.localpath,vlistfile[ii].filename);
 
     logfile.Write("get %s ...",strremotefilename);
 
@@ -157,9 +127,6 @@ bool _ftpgetfiles()
 
     logfile.WriteEx("ok.\n");
     
-    // 如果ptype==1，把下载成功的文件记录追加到okfilename文件中。
-    if (starg.ptype==1) AppendToOKFile(&vlistfile2[ii]);
-
     // 删除文件。
     if (starg.ptype==2) 
     {
@@ -173,7 +140,7 @@ bool _ftpgetfiles()
     if (starg.ptype==3) 
     {
       char strremotefilenamebak[301];
-      SNPRINTF(strremotefilenamebak,sizeof(strremotefilenamebak),300,"%s/%s",starg.remotepathbak,vlistfile2[ii].filename);
+      SNPRINTF(strremotefilenamebak,sizeof(strremotefilenamebak),300,"%s/%s",starg.remotepathbak,vlistfile[ii].filename);
       if (ftp.ftprename(strremotefilename,strremotefilenamebak)==false)
       {
         logfile.Write("ftp.ftprename(%s,%s) failed.\n",strremotefilename,strremotefilenamebak); return false;
@@ -196,7 +163,7 @@ void _help()
   printf("\n");
   printf("Using:/project/tools1/bin/ftpgetfiles logfilename xmlbuffer\n\n");
 
-  printf("Sample:/project/tools1/bin/procctl 30 /project/tools1/bin/ftpgetfiles /log/idc/ftpgetfiles_surfdata.log \"<host>127.0.0.1:21</host><mode>1</mode><username>wucz</username><password>wuczpwd</password><localpath>/idcdata/surfdata</localpath><remotepath>/tmp/idc/surfdata</remotepath><matchname>SURF_ZH*.XML,SURF_ZH*.CSV</matchname><listfilename>/idcdata/ftplist/ftpgetfiles_surfdata.list</listfilename><ptype>1</ptype><remotepathbak>/tmp/idc/surfdatabak</remotepathbak><okfilename>/idcdata/ftplist/ftpgetfiles_surfdata.xml</okfilename>\"\n\n\n");
+  printf("Sample:/project/tools1/bin/procctl 30 /project/tools1/bin/ftpgetfiles /log/idc/ftpgetfiles_surfdata.log \"<host>127.0.0.1:21</host><mode>1</mode><username>wucz</username><password>wuczpwd</password><localpath>/idcdata/surfdata</localpath><remotepath>/tmp/idc/surfdata</remotepath><matchname>SURF_ZH*.XML,SURF_ZH*.CSV</matchname><listfilename>/idcdata/ftplist/ftpgetfiles_surfdata.list</listfilename><ptype>3</ptype><remotepathbak>/tmp/idc/surfdatabak</remotepathbak>\"\n\n\n");
 
   printf("本程序是通用的功能模块，用于把远程ftp服务器的文件下载到本地目录。\n");
   printf("logfilename是本程序运行的日志文件。\n");
@@ -211,8 +178,7 @@ void _help()
          "不匹配的文件不会被下载，本字段尽可能设置精确，不建议用*匹配全部的文件。\n");
   printf("<listfilename>/idcdata/ftplist/ftpgetfiles_surfdata.list</listfilename> 下载前列出服务器文件名的文件。\n");
   printf("<ptype>1</ptype> 文件下载成功后，远程服务器文件的处理方式：1-什么也不做；2-删除；3-备份，如果为3，还要指定备份的目录。\n");
-  printf("<remotepathbak>/tmp/idc/surfdatabak</remotepathbak> 文件下载成功后，服务器文件的备份目录，此参数只有当ptype=3时才有效。\n");
-  printf("<okfilename>/idcdata/ftplist/ftpgetfiles_surfdata.xml</okfilename> 已下载成功文件名清单，此参数只有当ptype=1时才有效。\n\n\n");
+  printf("<remotepathbak>/tmp/idc/surfdatabak</remotepathbak> 文件下载成功后，服务器文件的备份目录，此参数只有当ptype=3时才有效。\n\n\n");
 }
 
 // 把xml解析到参数starg结构中。
@@ -260,17 +226,13 @@ bool _xmltoarg(char *strxmlbuffer)
   if ( (starg.ptype==3) && (strlen(starg.remotepathbak)==0) )
   { logfile.Write("remotepathbak is null.\n");  return false; }
 
-  GetXMLBuffer(strxmlbuffer,"okfilename",starg.okfilename,300); // 已下载成功文件名清单。
-  if ( (starg.ptype==1) && (strlen(starg.okfilename)==0) )
-  { logfile.Write("okfilename is null.\n");  return false; }
-
   return true;
 }
 
-// 把ftp.nlist()方法获取到的list文件加载到容器vlistfile2中。
+// 把ftp.nlist()方法获取到的list文件加载到容器vlistfile中。
 bool LoadListFile()
 {
-  vlistfile2.clear();
+  vlistfile.clear();
 
   CFile  File;
 
@@ -289,95 +251,14 @@ bool LoadListFile()
 
     if (MatchStr(stfileinfo.filename,starg.matchname)==false) continue;
 
-    vlistfile2.push_back(stfileinfo);
+    vlistfile.push_back(stfileinfo);
   }
 
   /*
-  for (int ii=0;ii<vlistfile2.size();ii++)
-    logfile.Write("filename=%s=\n",vlistfile2[ii].filename);
+  for (int ii=0;ii<vlistfile.size();ii++)
+    logfile.Write("filename=%s=\n",vlistfile[ii].filename);
   */
 
   return true;
 }
 
-// 加载okfilename文件中的内容到容器vlistfile1中。
-bool LoadOKFile()
-{
-  vlistfile1.clear();
-
-  CFile File;
-
-  // 注意：如果程序是第一次下载，okfilename是不存在的，并不是错误，所以也返回true。
-  if ( (File.Open(starg.okfilename,"r"))==false )  return true;
-
-  struct st_fileinfo stfileinfo;
-
-  while (true)
-  {
-    memset(&stfileinfo,0,sizeof(struct st_fileinfo));
-
-    if (File.Fgets(stfileinfo.filename,300,true)==false) break;
-
-    vlistfile1.push_back(stfileinfo);
-  }
-
-  return true;
-}
-
-// 比较vlistfile2和vlistfile1，得到vlistfile3和vlistfile4。
-bool CompVector()
-{
-  vlistfile3.clear(); vlistfile4.clear();
-
-  int ii,jj;
-
-  // 遍历vlistfile2。
-  for (ii=0;ii<vlistfile2.size();ii++)
-  {
-    // 在vlistfile1中查找vlistfile2[ii]的记录。
-    for (jj=0;jj<vlistfile1.size();jj++)
-    {
-      // 如果找到了，把记录放入vlistfile3。
-      if (strcmp(vlistfile2[ii].filename,vlistfile1[jj].filename)==0)
-      {
-        vlistfile3.push_back(vlistfile2[ii]); break;
-      }
-    }
-
-    // 如果没有找到，把记录放入vlistfile4。
-    if (jj==vlistfile1.size()) vlistfile4.push_back(vlistfile2[ii]);
-  }
-
-  return true;
-}
-
-// 把容器vlistfile3中的内容写入okfilename文件，覆盖之前的旧okfilename文件。
-bool WriteToOKFile()
-{
-  CFile File;    
-
-  if (File.Open(starg.okfilename,"w")==false)
-  {
-    logfile.Write("File.Open(%s) failed.\n",starg.okfilename); return false;
-  }
-
-  for (int ii=0;ii<vlistfile3.size();ii++)
-    File.Fprintf("%s\n",vlistfile3[ii].filename);
-
-  return true;
-}
-
-// 如果ptype==1，把下载成功的文件记录追加到okfilename文件中。
-bool AppendToOKFile(struct st_fileinfo *stfileinfo)
-{
-  CFile File;
-
-  if (File.Open(starg.okfilename,"a")==false)
-  {
-    logfile.Write("File.Open(%s) failed.\n",starg.okfilename); return false;
-  }
-
-  File.Fprintf("%s\n",stfileinfo->filename);
-
-  return true;
-}
