@@ -1,3 +1,13 @@
+/*
+ * @Description: 基于ftp协议的文件传输模块，从服务器下载文件到本地
+ * @Version: v2.0
+ * @Autor: lele
+ * @Date: 2023-08-05 16:16:34
+ * @LastEditors: lele
+ * @LastEditTime: 2023-08-05 16:16:39
+ */
+
+
 #include "_public.h"
 #include "_ftp.h"
 
