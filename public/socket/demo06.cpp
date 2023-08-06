@@ -1,7 +1,12 @@
 /*
- * 程序名：demo06.cpp，此程序用于演示不粘包的socket服务端。
- * 作者：吴从周
-*/
+ * @Description: demo06.cpp，此程序用于演示socket通讯的服务端。接收客户端的连接，没接收一个客户端报文，向客户端回复一个ok,如果连接断开，程序退出
+ * @Version: v3.0
+ * @Autor: lele
+ * @Date: 2023-08-06 22:21:45
+ * @LastEditors: lele
+ * @LastEditTime: 2023-08-06 22:21:46
+ */
+
 #include "../_public.h"
  
 int main(int argc,char *argv[])

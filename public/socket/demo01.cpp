@@ -1,7 +1,12 @@
 /*
- * 程序名：demo01.cpp，此程序用于演示socket通讯的客户端。
- * 作者：吴从周。
-*/
+ * @Description: demo01.cpp，此程序用于演示socket通讯的客户端。每次客户端向服务端发送一个报文，再等待服务端的回应
+ * @Version: v1.0
+ * @Autor: lele
+ * @Date: 2023-08-06 22:11:30
+ * @LastEditors: lele
+ * @LastEditTime: 2023-08-06 22:11:32
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>

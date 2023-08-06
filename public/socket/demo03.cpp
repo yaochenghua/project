@@ -1,7 +1,12 @@
 /*
- * 程序名：demo03.cpp，此程序用于演示粘包的socket客户端。
- * 作者：吴从周。
-*/
+ * @Description: demo03.cpp，此程序用于演示socket通讯的客户端。每次客户端向服务端发送一个报文，再等待服务端的回应
+ * @Version: v2.0
+ * @Autor: lele
+ * @Date: 2023-08-06 22:22:39
+ * @LastEditors: lele
+ * @LastEditTime: 2023-08-06 22:22:40
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>

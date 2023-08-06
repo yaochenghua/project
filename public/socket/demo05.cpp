@@ -1,7 +1,12 @@
 /*
- * 程序名：demo05.cpp，此程序用于演示不粘包的socket客户端。
- * 作者：吴从周。
-*/
+ * @Description: demo05.cpp，此程序用于演示socket通讯的客户端。每次客户端向服务端发送一个报文，再等待服务端的回应
+ * @Version: v3.0
+ * @Autor: lele
+ * @Date: 2023-08-06 22:21:23
+ * @LastEditors: lele
+ * @LastEditTime: 2023-08-06 22:21:23
+ */
+
 #include "../_public.h"
  
 int main(int argc,char *argv[])
