@@ -1,7 +1,13 @@
 /*
- * 程序名：fileserver.cpp，文件传输的服务端。
- * 作者：吴从周
-*/
+ * @Description: fileserver.cpp，文件传输的服务端。
+ * @Version: v1.0
+ * @Autor: lele
+ * @Date: 2023-08-07 14:35:01
+ * @LastEditors: lele
+ * @LastEditTime: 2023-08-07 14:35:03
+ */
+
+
 #include "_public.h"
 
 // 程序运行的参数结构体。

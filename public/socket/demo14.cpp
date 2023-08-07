@@ -1,7 +1,12 @@
 /*
- * 程序名：demo14.cpp，此程序用于演示网银APP软件的服务端，增加了心跳报文。
- * 作者：吴从周
-*/
+ * @Description: demo14.cpp，此程序用于演示网银APP软件的服务端，增加了心跳报文。
+ * @Version: v2.0
+ * @Autor: lele
+ * @Date: 2023-08-07 13:54:01
+ * @LastEditors: lele
+ * @LastEditTime: 2023-08-07 13:55:43
+ */
+
 #include "../_public.h"
 
 CLogFile logfile;      // 服务程序的运行日志。
