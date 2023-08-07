@@ -1,7 +1,13 @@
 /*
- * 程序名：demo08.cpp，此程序用于演示采用TcpServer类实现socket通讯的服务端。
- * 作者：吴从周
-*/
+ * @Description: demo08.cpp，此程序用于演示socket通讯的服务端。接收客户端的连接，没接收一个客户端报文，向客户端回复一个ok,如果连接断开，程序退出
+ * @Version: v4.0
+ * @Autor: lele
+ * @Date: 2023-08-07 10:58:30
+ * @LastEditors: lele
+ * @LastEditTime: 2023-08-07 10:58:31
+ */
+
+
 #include "../_public.h"
  
 int main(int argc,char *argv[])

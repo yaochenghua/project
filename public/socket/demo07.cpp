@@ -1,7 +1,13 @@
 /*
- * 程序名：demo07.cpp，此程序用于演示采用TcpClient类实现socket通讯的客户端。
- * 作者：吴从周。
-*/
+ * @Description: demo07.cpp，此程序用于演示socket通讯的客户端。每次客户端向服务端发送一个报文，再等待服务端的回应
+ * @Version: v4.0
+ * @Autor: lele
+ * @Date: 2023-08-07 10:52:31
+ * @LastEditors: lele
+ * @LastEditTime: 2023-08-07 10:52:32
+ */
+
+
 #include "../_public.h"
  
 int main(int argc,char *argv[])
