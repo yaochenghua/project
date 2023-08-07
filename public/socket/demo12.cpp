@@ -1,7 +1,13 @@
 /*
- * 程序名：demo12.cpp，此程序用于演示网银APP软件的服务端。
- * 作者：吴从周
-*/
+ * @Description: demo12.cpp，此程序用于演示网银APP软件的服务端。
+ * @Version: v1.0
+ * @Autor: lele
+ * @Date: 2023-08-07 11:57:35
+ * @LastEditors: lele
+ * @LastEditTime: 2023-08-07 11:57:37
+ */
+
+
 #include "../_public.h"
 
 CLogFile logfile;      // 服务程序的运行日志。
