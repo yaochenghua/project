@@ -1,7 +1,13 @@
 /*
- * 程序名：tcpputfiles.cpp，采用tcp协议，实现文件上传的客户端。
- * 作者：吴从周。
-*/
+ * @Description: tcpputfiles3.cpp，采用tcp协议，实现文件上传的客户端。
+ * @Version: v3.0
+ * @Autor: lele
+ * @Date: 2023-08-08 11:03:27
+ * @LastEditors: lele
+ * @LastEditTime: 2023-08-08 11:03:29
+ */
+
+
 #include "_public.h"
 
 // 程序运行的参数结构体。
