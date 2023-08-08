@@ -1,7 +1,11 @@
 /*
- *  程序名：createtable.cpp，此程序演示开发框架操作MySQL数据库（创建表）。
- *  作者：吴从周。
-*/
+ * @Description: createtable.cpp，此程序演示开发框架操作MySQL数据库（创建表）。
+ * @Version: v1.0
+ * @Autor: lele
+ * @Date: 2023-08-08 15:55:34
+ * @LastEditors: lele
+ * @LastEditTime: 2023-08-08 15:55:35
+ */
 
 #include "_mysql.h"       // 开发框架操作MySQL的头文件。
 
