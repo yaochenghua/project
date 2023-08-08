@@ -1,10 +1,10 @@
 /*
- * @Description: tcpputfiles.cpp，采用tcp协议，实现文件上传的客户端。
+ * @Description: tcpputfiles.cpp，采用tcp协议，实现文件上传的客户端(增加了文件上传成功后文件的处理方式)。
  * @Version: v4.0
  * @Autor: lele
  * @Date: 2023-08-08 11:56:01
  * @LastEditors: lele
- * @LastEditTime: 2023-08-08 11:56:01
+ * @LastEditTime: 2023-08-08 11:57:06
  */
 
 #include "_public.h"
