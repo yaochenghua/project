@@ -1,8 +1,14 @@
 /*
- *  程序名：fileserver6.cpp，文件传输的服务端。
+ * @Description: fileserver6.cpp，文件传输的服务端。
  *  和fileserver5.cpp是一样的，没有调整，调整的是客户端。
- *  作者：吴从周
-*/
+ * @Version: v6.0
+ * @Autor: lele
+ * @Date: 2023-08-08 14:34:50
+ * @LastEditors: lele
+ * @LastEditTime: 2023-08-08 14:34:53
+ */
+
+
 #include "_public.h"
  
 CLogFile logfile;       // 服务程序的运行日志。

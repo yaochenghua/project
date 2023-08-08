@@ -1,7 +1,13 @@
 /*
- * 程序名：demo32.cpp，此程序是网络通信的服务端程序，用于演示同步通信的效率。
- * 作者：吴从周
-*/
+ * @Description: demo32.cpp，此程序是网络通信的服务端程序，用于演示同步通信的效率。
+ * @Version: v1.0
+ * @Autor: lele
+ * @Date: 2023-08-08 12:16:18
+ * @LastEditors: lele
+ * @LastEditTime: 2023-08-08 12:16:19
+ */
+
+
 #include "../_public.h"
  
 int main(int argc,char *argv[])

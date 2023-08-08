@@ -1,7 +1,12 @@
 /*
- * 程序名：tcpgetfiles.cpp，采用tcp协议，实现文件下载的客户端。
- * 作者：吴从周。
-*/
+ * @Description: tcpgetfiles.cpp，采用tcp协议，实现文件下载的客户端。
+ * @Version: v1.0
+ * @Autor: lele
+ * @Date: 2023-08-08 14:38:52
+ * @LastEditors: lele
+ * @LastEditTime: 2023-08-08 14:38:56
+ */
+
 #include "_public.h"
 
 // 程序运行的参数结构体。

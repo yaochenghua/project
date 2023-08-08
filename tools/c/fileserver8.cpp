@@ -1,8 +1,14 @@
 /*
- *  程序名：fileserver8.cpp，文件传输的服务端。
+ * @Description: fileserver8.cpp，文件传输的服务端。
     把tcpputfiles.cpp发送文件的功能抄过来，放在SendFilesMain中。
- *  作者：吴从周
-*/
+ * @Version: v8.0
+ * @Autor: lele
+ * @Date: 2023-08-08 14:58:40
+ * @LastEditors: lele
+ * @LastEditTime: 2023-08-08 14:58:41
+ */
+
+
 #include "_public.h"
  
 CLogFile logfile;       // 服务程序的运行日志。
