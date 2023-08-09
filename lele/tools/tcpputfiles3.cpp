@@ -1,10 +1,10 @@
 /*
- * @Description: tcpputfiles.cpp，采用tcp协议，实现文件上传的客户端。
- * @Version: v6.0
+ * @Description: tcpputfiles3.cpp，采用tcp协议，实现文件上传的客户端。
+ * @Version: v3.0
  * @Autor: lele
- * @Date: 2023-08-09 09:59:49
+ * @Date: 2023-08-08 11:03:27
  * @LastEditors: lele
- * @LastEditTime: 2023-08-09 09:59:51
+ * @LastEditTime: 2023-08-08 11:03:29
  */
 
 
@@ -16,7 +16,7 @@ struct st_arg
   int  clienttype;          // 客户端类型，1-上传文件；2-下载文件。
   char ip[31];              // 服务端的IP地址。
   int  port;                // 服务端的端口。
-  int  ptype;               // 文件上传成功后本地文件的处理方式：1-删除文件；2-移动到备份目录。
+  int  ptype;               // 文件上传成功后文件的处理方式：1-删除文件；2-移动到备份目录。
   char clientpath[301];     // 本地文件存放的根目录。
   char clientpathbak[301];  // 文件成功上传后，本地文件备份的根目录，当ptype==2时有效。
   bool andchild;            // 是否上传clientpath目录下各级子目录的文件，true-是；false-否。
@@ -48,13 +48,9 @@ char strsendbuffer[1024];   // 接收报文的buffer。
 
 // 文件上传的主函数，执行一次文件上传的任务。
 bool _tcpputfiles();
-bool bcontinue=true;   // 如果调用_tcpputfiles发送了文件，bcontinue为true，初始化为true。
 
 // 把文件的内容发送给对端。
 bool SendFile(const int sockfd,const char *filename,const int filesize);
-
-// 删除或者转存本地的文件。
-bool AckMessage(const char *strrecvbuffer);
 
 CPActive PActive;  // 进程心跳。
 
@@ -76,7 +72,7 @@ int main(int argc,char *argv[])
   // 解析xml，得到程序运行的参数。
   if (_xmltoarg(argv[2])==false) return -1;
 
-  PActive.AddPInfo(starg.timeout,starg.pname);  // 把进程的心跳信息写入共享内存。
+  // PActive.AddPInfo(starg.timeout,starg.pname);  // 把进程的心跳信息写入共享内存。
 
   // 向服务端发起连接请求。
   if (TcpClient.ConnectToServer(starg.ip,starg.port)==false)
@@ -92,14 +88,9 @@ int main(int argc,char *argv[])
     // 调用文件上传的主函数，执行一次文件上传的任务。
     if (_tcpputfiles()==false) { logfile.Write("_tcpputfiles() failed.\n"); EXIT(-1); }
 
-    if (bcontinue==false)
-    {
-      sleep(starg.timetvl);
+    sleep(starg.timetvl);
 
-      if (ActiveTest()==false) break;
-    }
-
-    PActive.UptATime();
+    if (ActiveTest()==false) break;
   }
    
   EXIT(0);
@@ -151,10 +142,10 @@ void _help()
   printf("\n");
   printf("Using:/project/tools1/bin/tcpputfiles logfilename xmlbuffer\n\n");
 
-  printf("Sample:/project/tools1/bin/procctl 20 /project/tools1/bin/tcpputfiles /log/idc/tcpputfiles_surfdata.log \"<ip>192.168.174.133</ip><port>5005</port><ptype>1</ptype><clientpath>/tmp/tcp/surfdata1</clientpath><andchild>true</andchild><matchname>*.XML,*.CSV,*.JSON</matchname><srvpath>/tmp/tcp/surfdata2</srvpath><timetvl>10</timetvl><timeout>50</timeout><pname>tcpputfiles_surfdata</pname>\"\n");
-  printf("       /project/tools1/bin/procctl 20 /project/tools1/bin/tcpputfiles /log/idc/tcpputfiles_surfdata.log \"<ip>192.168.174.132</ip><port>5005</port><ptype>2</ptype><clientpath>/tmp/tcp/surfdata1</clientpath><clientpathbak>/tmp/tcp/surfdata1bak</clientpathbak><andchild>true</andchild><matchname>*.XML,*.CSV,*.JSON</matchname><srvpath>/tmp/tcp/surfdata2</srvpath><timetvl>10</timetvl><timeout>50</timeout><pname>tcpputfiles_surfdata</pname>\"\n\n\n");
+  printf("Sample:/project/tools1/bin/procctl 20 /project/tools1/bin/tcpputfiles /log/idc/tcpputfiles_surfdata.log \"<ip>192.168.174.132</ip><port>5005</port><ptype>1</ptype><clientpath>/tmp/tcp/surfdata1</clientpath><clientpathbak>/tmp/tcp/surfdata1bak</clientpathbak><andchild>true</andchild><matchname>*.XML,*.CSV</matchname><srvpath>/tmp/tcp/surfdata2</srvpath><timetvl>10</timetvl><timeout>50</timeout><pname>tcpputfiles_surfdata</pname>\"\n");
+  printf("       /project/tools1/bin/procctl 20 /project/tools1/bin/tcpputfiles /log/idc/tcpputfiles_surfdata.log \"<ip>192.168.174.132</ip><port>5005</port><ptype>2</ptype><clientpath>/tmp/tcp/surfdata1</clientpath><clientpathbak>/tmp/tcp/surfdata1bak</clientpathbak><andchild>true</andchild><matchname>*.XML,*.CSV</matchname><srvpath>/tmp/tcp/surfdata2</srvpath><timetvl>10</timetvl><timeout>50</timeout><pname>tcpputfiles_surfdata</pname>\"\n\n\n");
 
-  printf("本程序是数据中心的公共功能模块，采用tcp协议把文件上传给服务端。\n");
+  printf("本程序是数据中心的公共功能模块，采用tcp协议把文件发送给服务端。\n");
   printf("logfilename   本程序运行的日志文件。\n");
   printf("xmlbuffer     本程序运行的参数，如下：\n");
   printf("ip            服务端的IP地址。\n");
@@ -227,11 +218,6 @@ bool _tcpputfiles()
     logfile.Write("Dir.OpenDir(%s) 失败。\n",starg.clientpath); return false;
   }
 
-  int delayed=0;        // 未收到对端确认报文的文件数量。
-  int buflen=0;         // 用于存放strrecvbuffer的长度。
-
-  bcontinue=false;
-
   while (true)
   {
     memset(strsendbuffer,0,sizeof(strsendbuffer));
@@ -239,8 +225,6 @@ bool _tcpputfiles()
 
     // 遍历目录中的每个文件，调用ReadDir()获取一个文件名。
     if (Dir.ReadDir()==false) break;
-
-    bcontinue=true;
 
     // 把文件名、修改时间、文件大小组成报文，发送给对端。
     SNPRINTF(strsendbuffer,sizeof(strsendbuffer),1000,"<filename>%s</filename><mtime>%s</mtime><size>%d</size>",Dir.m_FullFileName,Dir.m_ModifyTime,Dir.m_FileSize);
@@ -255,38 +239,21 @@ bool _tcpputfiles()
     logfile.Write("send %s(%d) ...",Dir.m_FullFileName,Dir.m_FileSize);
     if (SendFile(TcpClient.m_connfd,Dir.m_FullFileName,Dir.m_FileSize)==true)
     {
-      logfile.WriteEx("ok.\n"); delayed++;
+      logfile.WriteEx("ok.\n");
     }
     else
     {
       logfile.WriteEx("failed.\n"); TcpClient.Close(); return false;
     }
 
-    PActive.UptATime();
-
     // 接收对端的确认报文。
-    while (delayed>0)
+    if (TcpClient.Read(strrecvbuffer,20)==false)
     {
-      memset(strrecvbuffer,0,sizeof(strrecvbuffer));
-      if (TcpRead(TcpClient.m_connfd,strrecvbuffer,&buflen,-1)==false) break;
-      // logfile.Write("strrecvbuffer=%s\n",strrecvbuffer);
-
-      // 删除或者转存本地的文件。
-      delayed--;
-      AckMessage(strrecvbuffer);
+      logfile.Write("TcpClient.Read() failed.\n"); return false;
     }
-  }
-
-  // 继续接收对端的确认报文。
-  while (delayed>0)
-  {
-    memset(strrecvbuffer,0,sizeof(strrecvbuffer));
-    if (TcpRead(TcpClient.m_connfd,strrecvbuffer,&buflen,10)==false) break;
     // logfile.Write("strrecvbuffer=%s\n",strrecvbuffer);
 
     // 删除或者转存本地的文件。
-    delayed--;
-    AckMessage(strrecvbuffer);
   }
 
   return true;
@@ -333,40 +300,6 @@ bool SendFile(const int sockfd,const char *filename,const int filesize)
   return true;
 }
 
-// 删除或者转存本地的文件。
-bool AckMessage(const char *strrecvbuffer)
-{
-  char filename[301];
-  char result[11];
-
-  memset(filename,0,sizeof(filename));
-  memset(result,0,sizeof(result));
-
-  GetXMLBuffer(strrecvbuffer,"filename",filename,300);
-  GetXMLBuffer(strrecvbuffer,"result",result,10);
-
-  // 如果服务端接收文件不成功，直接返回。
-  if (strcmp(result,"ok")!=0) return true;
-
-  // ptype==1，删除文件。
-  if (starg.ptype==1)
-  {
-    if (REMOVE(filename)==false) { logfile.Write("REMOVE(%s) failed.\n",filename); return false; }
-  }
-  
-  // ptype==2，移动到备份目录。
-  if (starg.ptype==2)
-  {
-    // 生成转存后的备份目录文件名。
-    char bakfilename[301];
-    STRCPY(bakfilename,sizeof(bakfilename),filename);
-    UpdateStr(bakfilename,starg.clientpath,starg.clientpathbak,false);
-    if (RENAME(filename,bakfilename)==false) 
-    { logfile.Write("RENAME(%s,%s) failed.\n",filename,bakfilename); return false; }
-  }
-
-  return true;
-}
 
 
 
