@@ -1,7 +1,13 @@
 /*
- *  程序名：updatetable.cpp，此程序演示开发框架操作MySQL数据库（修改表中的记录）。
- *  作者：吴从周。
-*/
+ * @Description: updatetable.cpp，此程序演示开发框架操作MySQL数据库（修改表中的记录）。
+ * @Version: v1.0
+ * @Autor: lele
+ * @Date: 2023-08-09 09:55:54
+ * @LastEditors: lele
+ * @LastEditTime: 2023-08-09 09:55:54
+ */
+
+
 
 #include "_mysql.h"       // 开发框架操作MySQL的头文件。
 

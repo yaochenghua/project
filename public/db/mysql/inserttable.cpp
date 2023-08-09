@@ -1,7 +1,13 @@
 /*
- *  程序名：inserttable.cpp，此程序演示开发框架操作MySQL数据库（向表中插入5条记录）。
- *  作者：吴从周。
-*/
+ * @Description: inserttable.cpp，此程序演示开发框架操作MySQL数据库（向表中插入5条记录）。
+ * @Version: v1.0
+ * @Autor: lele
+ * @Date: 2023-08-09 09:37:20
+ * @LastEditors: lele
+ * @LastEditTime: 2023-08-09 09:37:20
+ */
+
+
 #include <unistd.h>
 #include "_mysql.h"       // 开发框架操作MySQL的头文件。
 
