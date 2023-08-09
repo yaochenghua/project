@@ -1,7 +1,12 @@
 /*
- *  程序名：selecttable.cpp，此程序演示开发框架操作MySQL数据库（查询表中的记录）。
- *  作者：吴从周。
-*/
+ * @Description: selecttable.cpp，此程序演示开发框架操作MySQL数据库（查询表中的记录）。
+ * @Version: v1.0
+ * @Autor: lele
+ * @Date: 2023-08-09 10:19:29
+ * @LastEditors: lele
+ * @LastEditTime: 2023-08-09 10:19:30
+ */
+
 #include <unistd.h>
 #include "_mysql.h"       // 开发框架操作MySQL的头文件。
 

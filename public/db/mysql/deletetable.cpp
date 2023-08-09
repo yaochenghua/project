@@ -1,7 +1,12 @@
 /*
- *  程序名：deletetable.cpp，此程序演示开发框架操作MySQL数据库（删除表中的记录）。
- *  作者：吴从周。
-*/
+ * @Description: deletetable.cpp，此程序演示开发框架操作MySQL数据库（删除表中的记录）。
+ * @Version: v1.0
+ * @Autor: lele
+ * @Date: 2023-08-09 10:37:04
+ * @LastEditors: lele
+ * @LastEditTime: 2023-08-09 10:37:05
+ */
+
 
 #include "_mysql.h"       // 开发框架操作MySQL的头文件。
 
