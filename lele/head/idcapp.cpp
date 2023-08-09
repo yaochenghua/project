@@ -1,10 +1,18 @@
 /*
- * @Description: idcapp.cpp，此程序是数据中心项目公用函数和类的实现文件。 
+ * @Description: 
+ * @Version: 
+ * @Autor: lele
+ * @Date: 2023-08-09 12:19:51
+ * @LastEditors: lele
+ * @LastEditTime: 2023-08-09 12:19:53
+ */
+/*
+ * @Description: idcapp.cpp，此程序是数据中心项目公用函数和类的实现文件。
  * @Version: v1.0
  * @Autor: lele
- * @Date: 2023-08-09 12:19:04
+ * @Date: 2023-08-09 12:19:26
  * @LastEditors: lele
- * @LastEditTime: 2023-08-09 12:19:06
+ * @LastEditTime: 2023-08-09 12:19:27
  */
 
 

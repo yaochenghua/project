@@ -1,4 +1,12 @@
 /*
+ * @Description: 
+ * @Version: 
+ * @Autor: lele
+ * @Date: 2023-08-09 12:20:20
+ * @LastEditors: lele
+ * @LastEditTime: 2023-08-09 12:20:22
+ */
+/*
  * @Description: obtmindtodb4.cpp，本程序用于把全国站点分钟观测数据入库到T_ZHOBTMIND表中，支持xml和csv两种文件格式。
  * @Version: 
  * @Autor: lele
