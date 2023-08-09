@@ -1,7 +1,12 @@
 /*
- *  程序名：blobtofile.cpp，此程序演示开发框架操作MySQL数据库（提取BLOB字段内容到图片文件中）。
- *  作者：吴从周。
-*/
+ * @Description: blobtofile.cpp，此程序演示开发框架操作MySQL数据库（提取BLOB字段内容到图片文件中）。
+ * @Version: v1.0
+ * @Autor: lele
+ * @Date: 2023-08-09 10:44:33
+ * @LastEditors: lele
+ * @LastEditTime: 2023-08-09 10:44:34
+ */
+
 
 #include "_mysql.h"       // 开发框架操作MySQL的头文件。
 
