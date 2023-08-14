@@ -1,7 +1,13 @@
 /*
- *  程序名：dminingmysql.cpp，本程序是数据中心的公共功能模块，用于从mysql数据库源表抽取数据，生成xml文件。
- *  作者：吴从周。
-*/
+ * @Description: dminingmysql.cpp，本程序是数据中心的公共功能模块，用于从mysql数据库源表抽取数据，生成xml文件。
+ * @Version: v1.0
+ * @Autor: lele
+ * @Date: 2023-08-09 15:45:12
+ * @LastEditors: lele
+ * @LastEditTime: 2023-08-09 15:45:14
+ */
+
+
 #include "_public.h"
 #include "_mysql.h"
 
