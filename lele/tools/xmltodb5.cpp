@@ -1,10 +1,10 @@
 /*
- * @Description: xmltodb6.cpp，本程序是数据中心的公共功能模块，用于把xml文件入库到MySQL的表中。
- * @Version: v6.0
+ * @Description: xmltodb5.cpp，本程序是数据中心的公共功能模块，用于把xml文件入库到MySQL的表中。
+ * @Version: v5.0
  * @Autor: lele
- * @Date: 2023-08-15 12:54:40
+ * @Date: 2023-08-15 12:53:25
  * @LastEditors: lele
- * @LastEditTime: 2023-08-15 12:54:41
+ * @LastEditTime: 2023-08-15 12:53:26
  */
 
 
@@ -106,11 +106,6 @@ char strcolvalue[MAXCOLCOUNT][MAXCOLLEN+1]; // 存放从xml每一行中解析出
 sqlstatement stmtins,stmtupt;               // 插入和更新表的sqlstatement对象。
 void preparesql();
 
-// 在处理xml文件之前，如果stxmltotable.execsql不为空，就执行它。
-bool execsql();
-
-// 解析xml，存放在已绑定的输入变量strcolvalue数组中。
-void splitbuffer(char *strBuffer);
 
 int main(int argc,char *argv[])
 {
@@ -258,22 +253,10 @@ bool _xmltodb()
         if (xmltobakerr(Dir.m_FullFileName,starg.xmlpath,starg.xmlpatherr)==false) return false;
       }
 
-      // 打开xml文件错误，这种错误一般不会发生，如果真发生了，程序将退出。
-      if (iret==3)
-      {
-        logfile.WriteEx("failed，打开xml文件失败。\n"); return false;
-      }
-
       // 数据库错误，函数返回，程序将退出。
       if (iret==4)
       {
         logfile.WriteEx("failed，数据库错误。\n"); return false;
-      }
-
-      // 在处理xml文件之前，如果执行stxmltotable.execsql失败，函数返回，程序将退出。
-      if (iret==6)
-      {
-        logfile.WriteEx("failed，执行execsql失败。\n"); return false;
       }
     }
 
@@ -305,56 +288,19 @@ int _xmltodb(char *fullfilename,char *filename)
   preparesql();
 
   // 在处理xml文件之前，如果stxmltotable.execsql不为空，就执行它。
-  if (execsql()==false) return 6;
 
   // 打开xml文件。
-  CFile File;
-  if (File.Open(fullfilename,"r")==false) { conn.rollback(); return 3; } // 打开xml文件错误。
 
-  char strBuffer[10241];
-
+/*
   while (true)
   {
     // 从xml文件中读取一行。
-    if (File.FFGETS(strBuffer,10240,"<endl/>")==false) break;
 
-    // 解析xml，存放在已绑定的输入变量strcolvalue数组中。
-    splitbuffer(strBuffer);
+    // 解析xml，存放在已绑定的输入变量中。
 
     // 执行插入和更新的SQL。
-    if (stmtins.execute()!=0)
-    {
-      if (stmtins.m_cda.rc==1062)  // 违反唯一性约束，表示记录已存在。
-      {
-        // 判断入库参数的更新标志。
-        if (stxmltotable.uptbz==1)
-        {
-          if (stmtupt.execute()!=0)
-          {
-            // 如果update失败，记录出错的行和错误内容，函数不返回，继续处理数据，也就是说，不理这一行。
-            logfile.Write("%s",strBuffer);
-            logfile.Write("stmtupt.execute() failed.\n%s\n%s\n",stmtupt.m_sql,stmtupt.m_cda.message);
-
-            // 数据库连接已失效，无法继续，只能返回。 
-            // 1053-在操作过程中服务器关闭。2013-查询过程中丢失了与MySQL服务器的连接。
-            if ( (stmtupt.m_cda.rc==1053) || (stmtupt.m_cda.rc==2013) ) return 4;
-          }
-        }
-      }
-      else
-      {
-        // 如果insert失败，记录出错的行和错误内容，函数不返回，继续处理数据，也就是说，不理这一行。
-        logfile.Write("%s",strBuffer);
-        logfile.Write("stmtins.execute() failed.\n%s\n%s\n",stmtins.m_sql,stmtins.m_cda.message);
-
-        // 数据库连接已失效，无法继续，只能返回。
-        // 1053-在操作过程中服务器关闭。2013-查询过程中丢失了与MySQL服务器的连接。
-        if ( (stmtins.m_cda.rc==1053) || (stmtins.m_cda.rc==2013) ) return 4; 
-      }
-    }
   }
-
-  conn.commit();
+*/
 
   return 0;
 }
@@ -581,7 +527,7 @@ void crtsql()
     if (strcmp(TABCOLS.m_vallcols[ii].datatype,"date")!=0)
       SNPRINTF(strtemp,100,sizeof(strtemp),":%d",colseq);
     else
-      SNPRINTF(strtemp,100,sizeof(strtemp),"str_to_date(:%d,'%%%%Y%%%%m%%%%d%%%%H%%%%i%%%%s')",colseq);
+      SNPRINTF(strtemp,100,sizeof(strtemp),"str_to_date(:%d,'%%%%Y%%%%m%%%%d%%%%H%%%%i%%%%s)'",colseq);
 
     strcat(strinsertp2,strtemp);  strcat(strinsertp2,",");
 
@@ -635,7 +581,7 @@ void crtsql()
     if (strcmp(TABCOLS.m_vallcols[ii].datatype,"date")!=0)
       SNPRINTF(strtemp,100,sizeof(strtemp),"%s=:%d",TABCOLS.m_vallcols[ii].colname,colseq);
     else
-      SNPRINTF(strtemp,100,sizeof(strtemp),"%s=str_to_date(:%d,'%%%%Y%%%%m%%%%d%%%%H%%%%i%%%%s')",TABCOLS.m_vallcols[ii].colname,colseq);
+      SNPRINTF(strtemp,100,sizeof(strtemp),"%s=str_to_date(:%d,'%%%%Y%%%%m%%%%d%%%%H%%%%i%%%%s)'",TABCOLS.m_vallcols[ii].colname,colseq);
 
     strcat(strupdatesql,strtemp);  strcat(strupdatesql,",");
 
@@ -656,7 +602,7 @@ void crtsql()
     if (strcmp(TABCOLS.m_vallcols[ii].datatype,"date")!=0)
       SNPRINTF(strtemp,100,sizeof(strtemp)," and %s=:%d",TABCOLS.m_vallcols[ii].colname,colseq);
     else
-      SNPRINTF(strtemp,100,sizeof(strtemp)," and %s=str_to_date(:%d,'%%%%Y%%%%m%%%%d%%%%H%%%%i%%%%s')",TABCOLS.m_vallcols[ii].colname,colseq);
+      SNPRINTF(strtemp,100,sizeof(strtemp)," and %s=str_to_date(:%d,'%%%%Y%%%%m%%%%d%%%%H%%%%i%%%%s)'",TABCOLS.m_vallcols[ii].colname,colseq);
 
     strcat(strupdatesql,strtemp);  
 
@@ -725,52 +671,6 @@ void preparesql()
   }
 }
 
-// 在处理xml文件之前，如果stxmltotable.execsql不为空，就执行它。
-bool execsql()
-{
-  if (strlen(stxmltotable.execsql)==0) return true;
-
-  sqlstatement stmt;
-  stmt.connect(&conn);
-  stmt.prepare(stxmltotable.execsql);
-  if (stmt.execute()!=0)
-  {
-    logfile.Write("stmt.execute() failed.\n%s\n%s\n",stmt.m_sql,stmt.m_cda.message); return false;
-  }
-
-  return true;
-}
-
-// 解析xml，存放在已绑定的输入变量strcolvalue数组中。
-void splitbuffer(char *strBuffer)
-{
-  memset(strcolvalue,0,sizeof(strcolvalue));
-
-  char strtemp[31];
-
-  for (int ii=0;ii<TABCOLS.m_vallcols.size();ii++)
-  {
-    // 如果是日期时间字段，提取数值就可以了。
-    // 也就是说，xml文件中的日期时间只要包含了yyyymmddhh24miss就行，可以是任意分隔符。
-    if (strcmp(TABCOLS.m_vallcols[ii].datatype,"date")==0)
-    {
-      GetXMLBuffer(strBuffer,TABCOLS.m_vallcols[ii].colname,strtemp,TABCOLS.m_vallcols[ii].collen);
-      PickNumber(strtemp,strcolvalue[ii],false,false);
-      continue;
-    }
-
-    // 如果是数值字段，只提取数字、+-符号和圆点。
-    if (strcmp(TABCOLS.m_vallcols[ii].datatype,"number")==0)
-    {
-      GetXMLBuffer(strBuffer,TABCOLS.m_vallcols[ii].colname,strtemp,TABCOLS.m_vallcols[ii].collen);
-      PickNumber(strtemp,strcolvalue[ii],true,true);
-      continue;
-    }
-
-    // 如果是字符字段，直接提取。
-    GetXMLBuffer(strBuffer,TABCOLS.m_vallcols[ii].colname,strcolvalue[ii],TABCOLS.m_vallcols[ii].collen);
-  }
-}
 
 
 

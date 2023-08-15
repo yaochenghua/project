@@ -1,10 +1,10 @@
 /*
- * @Description: xmltodb6.cpp，本程序是数据中心的公共功能模块，用于把xml文件入库到MySQL的表中。
- * @Version: v6.0
+ * @Description: xmltodb3.cpp，本程序是数据中心的公共功能模块，用于把xml文件入库到MySQL的表中。
+ * @Version: v3.0
  * @Autor: lele
- * @Date: 2023-08-15 12:54:40
+ * @Date: 2023-08-15 12:31:39
  * @LastEditors: lele
- * @LastEditTime: 2023-08-15 12:54:41
+ * @LastEditTime: 2023-08-15 12:31:40
  */
 
 
@@ -90,27 +90,6 @@ int _xmltodb(char *fullfilename,char *filename);
 
 // 把xml文件移动到备份目录或错误目录。
 bool xmltobakerr(char *fullfilename,char *srcpath,char *dstpath);
-
-CTABCOLS TABCOLS;  // 获取表全部的字段和主键字段。
-
-char strinsertsql[10241];    // 插入表的SQL语句。
-char strupdatesql[10241];    // 更新表的SQL语句。
-
-// 拼接生成插入和更新表数据的SQL。
-void crtsql();
-
-// prepare插入和更新的sql语句，绑定输入变量。
-#define MAXCOLCOUNT  300                    // 每个表字段的最大数。
-#define MAXCOLLEN    100                    // 表字段值的最大长度。
-char strcolvalue[MAXCOLCOUNT][MAXCOLLEN+1]; // 存放从xml每一行中解析出来的值。
-sqlstatement stmtins,stmtupt;               // 插入和更新表的sqlstatement对象。
-void preparesql();
-
-// 在处理xml文件之前，如果stxmltotable.execsql不为空，就执行它。
-bool execsql();
-
-// 解析xml，存放在已绑定的输入变量strcolvalue数组中。
-void splitbuffer(char *strBuffer);
 
 int main(int argc,char *argv[])
 {
@@ -258,22 +237,10 @@ bool _xmltodb()
         if (xmltobakerr(Dir.m_FullFileName,starg.xmlpath,starg.xmlpatherr)==false) return false;
       }
 
-      // 打开xml文件错误，这种错误一般不会发生，如果真发生了，程序将退出。
-      if (iret==3)
-      {
-        logfile.WriteEx("failed，打开xml文件失败。\n"); return false;
-      }
-
       // 数据库错误，函数返回，程序将退出。
       if (iret==4)
       {
         logfile.WriteEx("failed，数据库错误。\n"); return false;
-      }
-
-      // 在处理xml文件之前，如果执行stxmltotable.execsql失败，函数返回，程序将退出。
-      if (iret==6)
-      {
-        logfile.WriteEx("failed，执行execsql失败。\n"); return false;
       }
     }
 
@@ -290,6 +257,8 @@ int _xmltodb(char *fullfilename,char *filename)
   // 从vxmltotable容器中查找filename的入库参数，存放在stxmltotable结构体中。
   if (findxmltotable(filename)==false) return 1; 
 
+  CTABCOLS TABCOLS;
+
   // 获取表全部的字段和主键信息，如果获取失败，应该是数据库连接已失效。
   // 在本程序运行的过程中，如果数据库出现异常，一定会在这里发现。
   if (TABCOLS.allcols(&conn,stxmltotable.tname)==false) return 4;
@@ -299,62 +268,23 @@ int _xmltodb(char *fullfilename,char *filename)
   if (TABCOLS.m_allcount==0) return 2; // 待入库的表不存在。
 
   // 拼接生成插入和更新表数据的SQL。
-  crtsql();
 
   // prepare插入和更新的sql语句，绑定输入变量。
-  preparesql();
 
   // 在处理xml文件之前，如果stxmltotable.execsql不为空，就执行它。
-  if (execsql()==false) return 6;
 
   // 打开xml文件。
-  CFile File;
-  if (File.Open(fullfilename,"r")==false) { conn.rollback(); return 3; } // 打开xml文件错误。
 
-  char strBuffer[10241];
-
+/*
   while (true)
   {
     // 从xml文件中读取一行。
-    if (File.FFGETS(strBuffer,10240,"<endl/>")==false) break;
 
-    // 解析xml，存放在已绑定的输入变量strcolvalue数组中。
-    splitbuffer(strBuffer);
+    // 解析xml，存放在已绑定的输入变量中。
 
     // 执行插入和更新的SQL。
-    if (stmtins.execute()!=0)
-    {
-      if (stmtins.m_cda.rc==1062)  // 违反唯一性约束，表示记录已存在。
-      {
-        // 判断入库参数的更新标志。
-        if (stxmltotable.uptbz==1)
-        {
-          if (stmtupt.execute()!=0)
-          {
-            // 如果update失败，记录出错的行和错误内容，函数不返回，继续处理数据，也就是说，不理这一行。
-            logfile.Write("%s",strBuffer);
-            logfile.Write("stmtupt.execute() failed.\n%s\n%s\n",stmtupt.m_sql,stmtupt.m_cda.message);
-
-            // 数据库连接已失效，无法继续，只能返回。 
-            // 1053-在操作过程中服务器关闭。2013-查询过程中丢失了与MySQL服务器的连接。
-            if ( (stmtupt.m_cda.rc==1053) || (stmtupt.m_cda.rc==2013) ) return 4;
-          }
-        }
-      }
-      else
-      {
-        // 如果insert失败，记录出错的行和错误内容，函数不返回，继续处理数据，也就是说，不理这一行。
-        logfile.Write("%s",strBuffer);
-        logfile.Write("stmtins.execute() failed.\n%s\n%s\n",stmtins.m_sql,stmtins.m_cda.message);
-
-        // 数据库连接已失效，无法继续，只能返回。
-        // 1053-在操作过程中服务器关闭。2013-查询过程中丢失了与MySQL服务器的连接。
-        if ( (stmtins.m_cda.rc==1053) || (stmtins.m_cda.rc==2013) ) return 4; 
-      }
-    }
   }
-
-  conn.commit();
+*/
 
   return 0;
 }
@@ -551,233 +481,6 @@ bool CTABCOLS::pkcols(connection *conn,char *tablename)
 
   return true;
 }
-
-// 拼接生成插入和更新表数据的SQL。
-void crtsql()
-{
-  memset(strinsertsql,0,sizeof(strinsertsql));    // 插入表的SQL语句。
-  memset(strupdatesql,0,sizeof(strupdatesql));    // 更新表的SQL语句。
-
-  // 生成插入表的SQL语句。 insert into 表名(%s) values(%s)
-  char strinsertp1[3001];    // insert语句的字段列表。
-  char strinsertp2[3001];    // insert语句values后的内容。
-
-  memset(strinsertp1,0,sizeof(strinsertp1));
-  memset(strinsertp2,0,sizeof(strinsertp2));
-  
-  int colseq=1;   // values部分字段的序号。
-
-  for (int ii=0;ii<TABCOLS.m_vallcols.size();ii++)
-  {
-    // upttime和keyid这两个字段不需要处理。
-    if ( (strcmp(TABCOLS.m_vallcols[ii].colname,"upttime")==0) ||
-         (strcmp(TABCOLS.m_vallcols[ii].colname,"keyid")==0) ) continue;
-    
-    // 拼接strinsertp1
-    strcat(strinsertp1,TABCOLS.m_vallcols[ii].colname); strcat(strinsertp1,",");
-
-    // 拼接strinsertp2，需要区分date字段和非date字段。
-    char strtemp[101];
-    if (strcmp(TABCOLS.m_vallcols[ii].datatype,"date")!=0)
-      SNPRINTF(strtemp,100,sizeof(strtemp),":%d",colseq);
-    else
-      SNPRINTF(strtemp,100,sizeof(strtemp),"str_to_date(:%d,'%%%%Y%%%%m%%%%d%%%%H%%%%i%%%%s')",colseq);
-
-    strcat(strinsertp2,strtemp);  strcat(strinsertp2,",");
-
-    colseq++;
-  }
-
-  strinsertp1[strlen(strinsertp1)-1]=0;  // 把最后一个多余的逗号删除。
-  strinsertp2[strlen(strinsertp2)-1]=0;  // 把最后一个多余的逗号删除。
-
-  SNPRINTF(strinsertsql,10240,sizeof(strinsertsql),\
-           "insert into %s(%s) values(%s)",stxmltotable.tname,strinsertp1,strinsertp2);
-
-  // logfile.Write("strinsertsql=%s=\n",strinsertsql);
-
-  // 如果入库参数中指定了表数据不需要更新，就不生成update语句了，函数返回。
-  if (stxmltotable.uptbz!=1) return;
-
-  // 生成修改表的SQL语句。
-  // update T_ZHOBTMIND1 set t=:1,p=:2,u=:3,wd=:4,wf=:5,r=:6,vis=:7,upttime=now(),mint=:8,minttime=str_to_date(:9,'%Y%m%d%H%i%s') where obtid=:10 and ddatetime=str_to_date(:11,'%Y%m%d%H%i%s')
-
-  // 更新TABCOLS.m_vallcols中的pkseq字段，在拼接update语句的时候要用到它。
-  for (int ii=0;ii<TABCOLS.m_vpkcols.size();ii++)
-    for (int jj=0;jj<TABCOLS.m_vallcols.size();jj++)
-      if (strcmp(TABCOLS.m_vpkcols[ii].colname,TABCOLS.m_vallcols[jj].colname)==0)
-      {
-        // 更新m_vallcols容器中的pkseq。
-        TABCOLS.m_vallcols[jj].pkseq=TABCOLS.m_vpkcols[ii].pkseq; break;
-      }
-
-   // 先拼接update语句开始的部分。
-   sprintf(strupdatesql,"update %s set ",stxmltotable.tname);
-
-  // 拼接update语句set后面的部分。
-  colseq=1;
-  for (int ii=0;ii<TABCOLS.m_vallcols.size();ii++)
-  {
-    // keyid字段不需要处理。
-    if (strcmp(TABCOLS.m_vallcols[ii].colname,"keyid")==0) continue;
-
-    // 如果是主键字段，也不需要拼接在set的后面。
-    if (TABCOLS.m_vallcols[ii].pkseq!=0) continue;
-
-    // upttime字段直接等于now()，这么做是为了考虑数据库的兼容性。
-    if (strcmp(TABCOLS.m_vallcols[ii].colname,"upttime")==0)
-    {
-      strcat(strupdatesql,"upttime=now(),"); continue;
-    }
-
-    // 其它字段需要区分date字段和非date字段。
-    char strtemp[101];
-    if (strcmp(TABCOLS.m_vallcols[ii].datatype,"date")!=0)
-      SNPRINTF(strtemp,100,sizeof(strtemp),"%s=:%d",TABCOLS.m_vallcols[ii].colname,colseq);
-    else
-      SNPRINTF(strtemp,100,sizeof(strtemp),"%s=str_to_date(:%d,'%%%%Y%%%%m%%%%d%%%%H%%%%i%%%%s')",TABCOLS.m_vallcols[ii].colname,colseq);
-
-    strcat(strupdatesql,strtemp);  strcat(strupdatesql,",");
-
-    colseq++;
-  }
-
-  strupdatesql[strlen(strupdatesql)-1]=0;    // 删除最后一个多余的逗号。
-
-  // 然后再拼接update语句where后面的部分。
-  strcat(strupdatesql," where 1=1 ");      // 用1=1是为了后面的拼接方便，这是常用的处理方法。
-
-  for (int ii=0;ii<TABCOLS.m_vallcols.size();ii++)
-  {
-    if (TABCOLS.m_vallcols[ii].pkseq==0) continue;   // 如果不是主键字段，跳过。
-
-    // 把主键字段拼接到update语句中，需要区分date字段和非date字段。
-    char strtemp[101];
-    if (strcmp(TABCOLS.m_vallcols[ii].datatype,"date")!=0)
-      SNPRINTF(strtemp,100,sizeof(strtemp)," and %s=:%d",TABCOLS.m_vallcols[ii].colname,colseq);
-    else
-      SNPRINTF(strtemp,100,sizeof(strtemp)," and %s=str_to_date(:%d,'%%%%Y%%%%m%%%%d%%%%H%%%%i%%%%s')",TABCOLS.m_vallcols[ii].colname,colseq);
-
-    strcat(strupdatesql,strtemp);  
-
-    colseq++;
-  }
-
-  // logfile.Write("strupdatesql=%s\n",strupdatesql);
-}
-
-// prepare插入和更新的sql语句，绑定输入变量。
-void preparesql()
-{
-  // 绑定插入sql语句的输入变量。
-  stmtins.connect(&conn);
-  stmtins.prepare(strinsertsql);
-
-  int colseq=1;        // values部分字段的序号。
-
-  for (int ii=0;ii<TABCOLS.m_vallcols.size();ii++)
-  {
-    // upttime和keyid这两个字段不需要处理。
-    if ( (strcmp(TABCOLS.m_vallcols[ii].colname,"upttime")==0) ||
-         (strcmp(TABCOLS.m_vallcols[ii].colname,"keyid")==0) ) continue;
- 
-    // 注意，strcolvalue数组的使用不是连续的，是和TABCOLS.m_vallcols的下标是一一对应的。
-    stmtins.bindin(colseq,strcolvalue[ii],TABCOLS.m_vallcols[ii].collen);
-
-    colseq++;
-  }
-  
-  // 绑定更新sql语句的输入变量。
-  // 如果入库参数中指定了表数据不需要更新，就不处理update语句了，函数返回。
-  if (stxmltotable.uptbz!=1) return;
-
-  stmtupt.connect(&conn);
-  stmtupt.prepare(strupdatesql);
-
-  colseq=1;        // set和where部分字段的序号。
-
-  // 绑定set部分的输入参数。
-  for (int ii=0;ii<TABCOLS.m_vallcols.size();ii++)
-  {
-    // upttime和keyid这两个字段不需要处理。
-    if ( (strcmp(TABCOLS.m_vallcols[ii].colname,"upttime")==0) ||
-         (strcmp(TABCOLS.m_vallcols[ii].colname,"keyid")==0) ) continue;
-  
-    // 如果是主键字段，也不需要拼接在set的后面。
-    if (TABCOLS.m_vallcols[ii].pkseq!=0) continue;
-
-    // 注意，strcolvalue数组的使用不是连续的，是和TABCOLS.m_vallcols的下标是一一对应的。
-    stmtupt.bindin(colseq,strcolvalue[ii],TABCOLS.m_vallcols[ii].collen);
-
-    colseq++;
-  }
-
-  // 绑定where部分的输入参数。
-  for (int ii=0;ii<TABCOLS.m_vallcols.size();ii++)
-  {
-    // 如果不是主键字段，跳过，只有主键字段才拼接在where的后面。
-    if (TABCOLS.m_vallcols[ii].pkseq==0) continue;
-    
-    // 注意，strcolvalue数组的使用不是连续的，是和TABCOLS.m_vallcols的下标是一一对应的。
-    stmtupt.bindin(colseq,strcolvalue[ii],TABCOLS.m_vallcols[ii].collen);
-
-    colseq++;
-  }
-}
-
-// 在处理xml文件之前，如果stxmltotable.execsql不为空，就执行它。
-bool execsql()
-{
-  if (strlen(stxmltotable.execsql)==0) return true;
-
-  sqlstatement stmt;
-  stmt.connect(&conn);
-  stmt.prepare(stxmltotable.execsql);
-  if (stmt.execute()!=0)
-  {
-    logfile.Write("stmt.execute() failed.\n%s\n%s\n",stmt.m_sql,stmt.m_cda.message); return false;
-  }
-
-  return true;
-}
-
-// 解析xml，存放在已绑定的输入变量strcolvalue数组中。
-void splitbuffer(char *strBuffer)
-{
-  memset(strcolvalue,0,sizeof(strcolvalue));
-
-  char strtemp[31];
-
-  for (int ii=0;ii<TABCOLS.m_vallcols.size();ii++)
-  {
-    // 如果是日期时间字段，提取数值就可以了。
-    // 也就是说，xml文件中的日期时间只要包含了yyyymmddhh24miss就行，可以是任意分隔符。
-    if (strcmp(TABCOLS.m_vallcols[ii].datatype,"date")==0)
-    {
-      GetXMLBuffer(strBuffer,TABCOLS.m_vallcols[ii].colname,strtemp,TABCOLS.m_vallcols[ii].collen);
-      PickNumber(strtemp,strcolvalue[ii],false,false);
-      continue;
-    }
-
-    // 如果是数值字段，只提取数字、+-符号和圆点。
-    if (strcmp(TABCOLS.m_vallcols[ii].datatype,"number")==0)
-    {
-      GetXMLBuffer(strBuffer,TABCOLS.m_vallcols[ii].colname,strtemp,TABCOLS.m_vallcols[ii].collen);
-      PickNumber(strtemp,strcolvalue[ii],true,true);
-      continue;
-    }
-
-    // 如果是字符字段，直接提取。
-    GetXMLBuffer(strBuffer,TABCOLS.m_vallcols[ii].colname,strcolvalue[ii],TABCOLS.m_vallcols[ii].collen);
-  }
-}
-
-
-
-
-
-
-
 
 
 
