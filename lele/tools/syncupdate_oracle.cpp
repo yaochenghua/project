@@ -1,3 +1,4 @@
+
 /*
  * @Description: syncupdate_oracle.cpp，本程序是数据中心的公共功能模块，采用刷新的方法同步Oracle数据库之间的表。
  * @Version: v1.0
