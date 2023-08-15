@@ -1,7 +1,13 @@
 /*
- *  程序名：xmltodb.cpp，本程序是数据中心的公共功能模块，用于把xml文件入库到MySQL的表中。
- *  作者：吴从周。
-*/
+ * @Description: xmltodb1.cpp，本程序是数据中心的公共功能模块，用于把xml文件入库到MySQL的表中。
+ * @Version: v1.0
+ * @Autor: lele
+ * @Date: 2023-08-15 12:03:59
+ * @LastEditors: lele
+ * @LastEditTime: 2023-08-15 12:04:00
+ */
+
+
 #include "_public.h"
 #include "_mysql.h"
 
